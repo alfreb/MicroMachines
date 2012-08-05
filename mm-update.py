@@ -1,7 +1,7 @@
 import libvirt
 import sys
 
-xmlFile=open("/home/alfred/microMachine.xml")
+xmlFile=open("microMachine.xml")
 xmlStr=xmlFile.read()
 
 print "Connecting to hypervisor"
