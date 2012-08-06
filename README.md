@@ -7,6 +7,21 @@ This is a static, dedicated branch for CloudCom 2012.
 While the master branch will continue to change, this branch is left as it was at the point of article submission.
 
 
+SYSTEM REQUIREMENTS
+-------------------
+
+- Base system
+  kvm
+  libvirt
+  python-libvirt
+  make
+  nasm
+
+- Stats package
+  sysstat
+
+
+
 
 RECREATING PLOTS
 ----------------
