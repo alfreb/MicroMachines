@@ -1,0 +1,6 @@
+Run task on specific CPU:
+    	 taskset -p n <command>
+
+Set/Get Stack size:
+	 ulimit -s
+

@@ -1,0 +1,1 @@
+virsh vcpupin mm_0 --vcpu 0 --cpulist 33 --live
