@@ -1,13 +1,18 @@
 #! /usr/bin/python
+#
+# Tools to manage large populations of MicroMachines
+#
+#
+
 import re
 import sys
 import libvirt
 import subprocess
 import thread
 
-xmlPath="./microMachine.xml"
+xmlPath="./images/microMachine.xml"
 #imagesPath="/home/alfred/MicroMachines/images/"
-mmCount=1
+mmCount=1000
 mmPrefix="mm"
 mmPrefixSep="_"
 
@@ -96,7 +101,7 @@ def freemem():
     return mFree
     
 
-def memUsage_allOn():
+def memUsage():
     m1=freemem()
     deploy()
     start()
@@ -106,6 +111,41 @@ def memUsage_allOn():
     m3=freemem()
     print "Memory difference, all stopped: "+str(m3-m2)+" Kb"
     undeploy()
+
+def moveToCPU(machineName,cpuNr):    
+    conn=connect()
+    cpuCount=conn.getInfo()[2]
+    if not cpuNr<cpuCount:
+        raise Exception("Invalid CPU number")
+    cpuMap=[False for x in range(0,cpuCount)]
+    cpuMap[cpuNr]=True
+    mm=conn.lookupByName(machineName)
+    mm.pinVcpu(0,tuple(cpuMap))
+    conn.close()
+
+
+def moveAllToCPU(cpuNr):
+    conn=connect()
+    cpuCount=conn.getInfo()[2]
+    if not cpuNr<cpuCount:
+        raise Exception("Invalid CPU number")
+    cpuMap=[False for x in range(0,cpuCount)]
+    cpuMap[cpuNr]=True
+    cpuMap=tuple(cpuMap)
+    for mm in mmNames:
+        mmObj=conn.lookupByName(mm)
+        mmObj.pinVcpu(0,cpuMap)
+    conn.close()
+
+def distributeOverCPURange(cpuStart,cpuStop):
+    conn=connect()
+    cpuCount=conn.getInfo()[2]
+    if not cpuStop<cpuCount:
+        raise Exception("Invalid CPU number")
+
+
+    
+
 
 #memUsage_allOn()
 #    print mm_xml
@@ -120,6 +160,7 @@ def memUsage_allOn():
 #start()
 
 def make():
+    subprocess.call("make")
     deploy();start()
 
 def clean():
