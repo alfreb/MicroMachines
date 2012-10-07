@@ -12,7 +12,7 @@ import thread
 
 xmlPath="./images/microMachine.xml"
 #imagesPath="/home/alfred/MicroMachines/images/"
-mmCount=1000
+mmCount=10
 mmPrefix="mm"
 mmPrefixSep="_"
 
@@ -39,7 +39,8 @@ for mm in range(0,mmCount):
     
 def connect():
     print "Connecting to Hypervisor"
-    conn = libvirt.open(None)
+    #conn = libvirt.open(None)
+    conn=libvirt.open("qemu:///session")
     if conn == None:
         print 'Failed to open connection to the hypervisor'
         sys.exit(1)
