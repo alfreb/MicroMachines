@@ -1,0 +1,8 @@
+
+
+procstat=open("/proc/stat")
+
+for line in procstat:
+    print line
+
+

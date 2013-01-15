@@ -1,0 +1,10 @@
+mm_758 started 
+logging to  stats/libvirt_boottest_1000.csv
+Traceback (most recent call last):
+  File "automate_libvirt_deployment.py", line 26, in <module>
+    start()
+  File "/home/alfred/MicroMachines/microManage.py", line 112, in start
+    mmObj.create()
+  File "/usr/lib/python2.7/dist-packages/libvirt.py", line 551, in create
+    if ret == -1: raise libvirtError ('virDomainCreate() failed', dom=self)
+libvirt.libvirtError: monitor socket did not show up.: Connection refused

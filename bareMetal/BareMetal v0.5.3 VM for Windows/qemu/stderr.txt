@@ -1,0 +1,1 @@
+pci_add_option_rom: failed to find romfile "pxe-e1000.bin"
