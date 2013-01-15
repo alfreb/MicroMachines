@@ -14,7 +14,7 @@ import time
 
 cpuList=range(20,30)
 cpuCount=len(cpuList)
-mmCount=3
+mmCount=100
 mmPrefix="mm"
 mmPrefixSep="_"
 
@@ -52,6 +52,7 @@ def ls():
     return screenLs
         
 vms={}
+
 def start(oncpu=None):
     now=datetime.datetime.now()
     memStart=freemem()
@@ -62,7 +63,7 @@ def start(oncpu=None):
     i=0
     #Args:
     command="kvm"
-    graphics="-nographic"
+    graphics="-curses"
     mem="1"    
     smp="1,sockets=1,cores=1,threads=1,maxcpus=1"
     net="none"
@@ -80,7 +81,9 @@ def start(oncpu=None):
             cpubind=cpuList[i%cpuCount]   
         namearg=mm+",process=proc_"+mm
         #cmd=["screen", "-d", "-m", "-S", mm, "taskset", "-c", str(cpu), command,"-m",mem, "-hda", "microMachine.hda", graphics]
-        cmd=["screen", "-d", "-m", "-S", mm,"taskset","-c", str(cpubind),command,"-m",mem, "-hda", "microMachine.hda","-icount",icount, "-cpu",cpu,"-smp",smp,"-net",net,"-name",namearg, graphics]
+        cmdfull=["screen", "-d", "-m", "-S", mm,"taskset","-c", str(cpubind),command,"-m",mem, "-hda", "microMachine.hda","-smp",smp,"-net",net,"-name",namearg, graphics]
+        cmdMini=["screen", "-d", "-m", "-S", mm, "taskset", "-c", str(cpubind), command, "-hda", "microMachine.hda", graphics]
+        cmd=cmdMini
         #cmd=["screen", "-d", "-m", "-S", mm, "taskset", "-c", str(cpu), "sleep", "1000000"]
     #Generate uniquie uuid
         

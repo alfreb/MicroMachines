@@ -9,6 +9,13 @@ import sys
 import libvirt
 import subprocess
 import thread
+import datetime
+import os
+
+sys.path.append(os.getcwd())
+
+import logger
+
 
 xmlPath="./images/microMachine.xml"
 #imagesPath="/home/alfred/MicroMachines/images/"
@@ -19,6 +26,7 @@ mmPrefixSep="_"
 xmlFile=open(xmlPath)
 xmlStr=xmlFile.read()
 
+
 # Setting Instance-count from arg1
 if len(sys.argv)>2:
     mmCount=sys.argv[1]
@@ -28,17 +36,30 @@ if len(sys.argv)>2:
         mmPrefix=sys.argv[2]
 
 
-print "Instances: "+mmPrefix+mmPrefixSep+"0 - "+mmPrefix+mmPrefixSep+str(mmCount-1)
+#print "Instances: "+mmPrefix+mmPrefixSep+"0 - "+mmPrefix+mmPrefixSep+str(mmCount-1)
+def trace(string):
+    global DEBUG
+    try:
+        DEBUG
+    except: 
+        DEBUG=True
+    if DEBUG:
+        print string
 
 mmNames=[]
+def generateInstanceNames(n=mmCount):
+    global mmCount,mmNames
+    mmCount=n
+    trace("Instances: "+mmPrefix+mmPrefixSep+"0 - "+mmPrefix+mmPrefixSep+str(mmCount-1))
 
-for mm in range(0,mmCount):
+    for mm in range(0,mmCount):
     #New name, based on nr. and prefix
-    mm_name=mmPrefix+mmPrefixSep+str(mm)
-    mmNames.append(mm_name)
+        mm_name=mmPrefix+mmPrefixSep+str(mm)
+        mmNames.append(mm_name)
+
     
 def connect():
-    print "Connecting to Hypervisor"
+#    print "Connecting to Hypervisor"
     #conn = libvirt.open(None)
     conn=libvirt.open("qemu:///session")
     if conn == None:
@@ -54,7 +75,7 @@ def deploy():
         mm_xml=re.sub("<name>.*</name>","<name>"+mm+"</name>",xmlStr)
     #Generate uniquie uuid
         mm_uuid=subprocess.check_output("uuidgen").rstrip()
-        print mm+" uuid: "+mm_uuid
+        trace(mm+" uuid: "+mm_uuid)
     #Put uuid into xml
         mm_xml=re.sub("<uuid>.*</uuid>","<uuid>"+mm_uuid+"</uuid>",mm_xml)
         conn.defineXML(mm_xml)
@@ -64,25 +85,35 @@ def stop_1(mm_name,conn):
     mmObj=conn.lookupByName(mm_name)
     if(mmObj.isActive()):
         mmObj.destroy()
-        print mm_name+" shutting down"
+        trace(mm_name+" shutting down")
     else:
-        print mm_name+" allready down"
+        trace(mm_name+" allready down")
 
 def stop():
     conn=connect()
     for mm in mmNames:
         #thread.start_new_thread(stop_1,(mm,))
-        stop_1(mm,conn)
-#        print mm+" active: "+str(mmObj.isActive())
+        try:
+            stop_1(mm,conn)
+    #        trace mm+" active: "+str(mmObj.isActive())
+        except:
+            trace(mm+" does not exist")
     conn.close()
 
+        
+
 def start():
-    conn=connect()
+    t0=datetime.datetime.now()
+    n=0
+    conn=connect()    
     for mm in mmNames:
         mmObj=conn.lookupByName(mm)
         if(not mmObj.isActive()):
             mmObj.create()
-        print mm+" started " #+str(mmObj.isActive())
+            n+=1
+        tn=datetime.datetime.now()-t0
+        trace(mm+" started ") #+str(mmObj.isActive()
+        logger.log(str(tn.total_seconds())+"\t"+str(n))
     conn.close()
 
 def undeploy():
@@ -91,9 +122,9 @@ def undeploy():
         try:
             mmObj=conn.lookupByName(mm)
             mmObj.undefine()
-            print mm+" is undefined"
+            trace(mm+" is undefined")
         except:
-            print mm+" does not exist"
+            trace(mm+" does not exist")
     conn.close()
         
 def freemem():
