@@ -1,8 +1,7 @@
 boot:
-	mov dx, 0		;Select COM1
-	mov ah, 1 		;1 -> Serial print
+	mov ah, 1 		;1 -> Serial write
 	mov al, '!'
-	int 14h		
+	int 14h			;14h-> Bios Serial port subsystem
 	
 run:				;Boot sequence done, do work
 	hlt			;Here, just idle

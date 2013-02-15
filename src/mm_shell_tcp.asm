@@ -1,35 +1,77 @@
-start:
-	mov ax, 07C0h; Set up 4K stack space after this bootloader
-	add ax, 288; (4096 + 512) / 16 bytes per paragraph
-	mov ss, ax
-	mov sp, 4096
+init:	
+	mov     dx, 0		;Select COM1:
+prompt:	
+	call 	write_prompt
+        
+        test    ah, 80h		;Check for error
+        jnz     SerialError
 
-	mov ax, 07C0h; Set data segment to where we're loaded
-	mov ds, ax
+	;; Read one byte
+	call	read_al
+		
+	;; Increment - for fun
+	inc 	al
+	
+	;; Write it back out
+	call 	write_al
+	
+	;; Read another bytes - expecting a newline
+	call 	read_al
+	
+	;; Write an exclamation mark
+        mov     al, '!'		
+	call 	write_al
+	call 	write_newline	
 
+	;; Repeat forever
+	jmp	prompt
 
-	mov si, text_string; Put string position into SI
-	call print_string; Call our string-printing routine
-
-	jmp $; Jump here - infinite loop!
-
-
-	text_string db 'This is my cool new OS!', 0
-
-
-print_string:; Routine: output string in SI to screen
-	mov ah, 0Eh; int 10h 'print char' function
-
-.repeat:
-	lodsb; Get character from string
-	cmp al, 0
-	je .done; If char is zero, end of string
-	int 10h; Otherwise, print it
-	jmp .repeat
-
-.done:
+write_al:			;Send whatever is on al
+	mov     ah, 1		
+	int 	14h
 	ret
 
+write_newline:
+	mov 	al, 0xA
+	call 	write_al
+	ret
 
-	times 510-($-$$) db 0; Pad remainder of boot sector with 0s
-	dw 0xAA55; The standard PC boot signature
+write_prompt:
+	mov	al, '$'
+	call 	write_al
+	mov 	al, '>'
+	call 	write_al
+	ret
+	
+read_al:			;Read a byte into al
+	call	wait_for_data	
+	mov 	ah, 2		;Opcode for reading from serial
+	int 	14h		;Interrupt bios
+	ret			;Else, return
+
+	
+wait_for_data:			;Wait until the Data-available-flag (bit 8) is set.
+	mov 	ah,3
+	mov 	al,0
+	int 	14h	
+	bt	ax,8		;copy bit-flag from ax to carry-flag
+	jnc	sleep_wait
+	ret
+
+	
+sleep_wait:
+	mov 	eax,10
+	call 	sleep
+	jmp	wait_for_data
+
+sleep:
+	hlt
+	dec eax
+	jnz sleep
+	ret
+	
+SerialError:
+	mov 	eax,999
+	
+	times 510-($-$$) db 0	;
+	dw 0xAA55
