@@ -1,3 +1,6 @@
+;; Originally fetched from a MikeOS tutorial
+;; ...Now I can't find the original post, but MikeOS is at http://mikeos.sourceforge.net/
+
 start:
 	mov ax, 07C0h; Set up 4K stack space after this bootloader
 	add ax, 288; (4096 + 512) / 16 bytes per paragraph
